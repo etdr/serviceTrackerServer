@@ -4,6 +4,7 @@ const validateSession=require('../Middleware/validate-session-teacher')
 const Teacher= require('../Db').import('../Models/teacherUser');
 const jwt= require('jsonwebtoken')
 const bcrypt= require('bcryptjs');
+const validateSessionTeacher = require('../Middleware/validate-session-teacher');
 const User= require('../Db').import('../Models/studentUser');
 const Service = require("../Db").import("../Models/service");
 
@@ -21,7 +22,7 @@ router.post('/signup', (req,res) =>{
     .then(teacherUser =>{
         const token= jwt.sign({classId:teacherUser.classId}, process.env.JWT_SECRET, {expiresIn:"7d"})
         res.json({
-            teacherUser:teacherUser,
+            user: teacherUser,
             message:"user was created successfully",
             sessionToken:token
         })
@@ -42,7 +43,7 @@ router.post('/login',  (req, res) =>{
                     if(matches){
                         const token=jwt.sign({classId:teacherUser.classId},process.env.JWT_SECRET, {expiresIn:"7d"})
                         res.status(200).json({
-                            teacherUser:teacherUser,
+                            user: teacherUser,
                             message: "successfully authenticated",
                             sessionToken:token
                         })
@@ -57,6 +58,20 @@ router.post('/login',  (req, res) =>{
     })
     .catch(err=> res.status(500).json({error:err}))
 })
+
+router.get('/me', validateSessionTeacher, async (req, res) => {
+    try {
+      console.log(req.user)
+      const dbResult = await Teacher.findOne({
+        where: { classId: req.user.classId },
+        include: [{ model: User }]
+      })
+  
+      res.status(200).json(dbResult)
+    } catch (err) {
+      res.status(500).json(err)
+    }
+  })
 
     //GET '/' --- Gets all users (eventually add validateSession when connected to teacher)
 router.get("/all", validateSession,   function (req, res) {

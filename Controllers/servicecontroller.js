@@ -45,34 +45,45 @@ router.get("/user/:id", validateSessionTeacher, function (req, res) {
 });
 
 //GET '/' --- Pulls up all service entries with status of approved
-router.get("/Approved", validateSessionTeacher, function (req, res) {
+// router.get("/Approved", validateSessionTeacher, function (req, res) {
+//   return Service.findAll({
+//     where: {status: "Approved", classId: req.user.classId  },
+//     include: [{ model: User }],
+//   })
+//     .then((entry) => res.status(200).json(entry))
+//     .catch((err) => res.status(500).json({ error: err }));
+// });
+
+// //GET '/' --- Pulls up all service entries with status of denied
+// router.get("/Denied", validateSessionTeacher, function (req, res) {
+//   return Service.findAll({
+//     where: {status: "Denied", classId: req.user.classId  },
+//     include: [{ model: User }],
+//   })
+//     .then((entry) => res.status(200).json(entry))
+//     .catch((err) => res.status(500).json({ error: err }));
+// });
+
+// //GET '/' --- Pulls up all service entries with status of denied
+// router.get("/Pending", validateSessionTeacher, function (req, res) {
+//   return Service.findAll({
+//     where: {status: "Pending", classId: req.user.classId },
+//     include: [{ model: User} ],
+//   })
+//     .then((entry) => res.status(200).json(entry))
+//     .catch((err) => res.status(500).json({ error: err }));
+// });
+
+router.get("/status/:status", validateSessionTeacher, function (req, res) {
   return Service.findAll({
-    where: {status: "Approved", classId: req.user.classId  },
+    where: {status: req.params.status, classId: req.user.classId  },
     include: [{ model: User }],
   })
     .then((entry) => res.status(200).json(entry))
     .catch((err) => res.status(500).json({ error: err }));
 });
 
-//GET '/' --- Pulls up all service entries with status of denied
-router.get("/Denied", validateSessionTeacher, function (req, res) {
-  return Service.findAll({
-    where: {status: "Denied", classId: req.user.classId  },
-    include: [{ model: User }],
-  })
-    .then((entry) => res.status(200).json(entry))
-    .catch((err) => res.status(500).json({ error: err }));
-});
 
-//GET '/' --- Pulls up all service entries with status of denied
-router.get("/Pending", validateSessionTeacher, function (req, res) {
-  return Service.findAll({
-    where: {status: "Pending", classId: req.user.classId },
-    include: [{ model: User} ],
-  })
-    .then((entry) => res.status(200).json(entry))
-    .catch((err) => res.status(500).json({ error: err }));
-});
 
 //GET '/' --- Pulls up all service entries
 // router.get("/all", validateSession, function (req, res) {

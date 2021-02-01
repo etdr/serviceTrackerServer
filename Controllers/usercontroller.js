@@ -82,7 +82,19 @@ router.get("/allbyhours", validateSessionTeacher, function (req, res) {
     .catch((err) => res.status(500).json({ error: err }));
 });
 
+// GET user with a token
+router.get('/me', validateSession, async (req, res) => {
+  try {
+    const dbResult = await User.findOne({
+      where: { id: req.user.id },
+      include: [teacherUser, Service]
+    })
 
+    res.status(200).json(dbResult)
+  } catch (err) {
+    res.status(500).json(err)
+  }
+})
 
 
 //GET '/:id' --- Gets all users (eventually add validateSession when connected to teacher)

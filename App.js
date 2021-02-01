@@ -6,7 +6,7 @@ const app= Express();
 app.get('/', (req, res)=> res.render('index'));
 
 const database=require('./Db');
-database.sync();
+database.sync({alter: true});
 app.use(Express.json());
 
 app.use(require('./Middleware/headers'))

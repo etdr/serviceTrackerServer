@@ -16,16 +16,17 @@ module.exports=(sequelize, DataTypes) =>{
             unique:true,
             allowNull:false
         },
-        totalHours:{
-            type:DataTypes.INTEGER,
-        }, 
         password:{
             type:DataTypes.STRING,
             allowNull:false,
             validate:{notEmpty:true},
             //Password expression. Password must be between 4 and 8 digits long and include at least one numeric digit.
-
+        },
+        teacher: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         }
+
   
   
 

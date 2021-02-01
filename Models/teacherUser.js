@@ -25,6 +25,10 @@ module.exports=(sequelize, DataTypes) =>{
         classId:{
             type:DataTypes.INTEGER,
             primaryKey: true
+        },
+        teacher: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true
         }
 
 
