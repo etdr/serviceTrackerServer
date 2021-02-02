@@ -1,6 +1,7 @@
 
 const { DataTypes } = require('sequelize')
 
+const { serviceHours } = require('../parameters')
 
 module.exports = require('../Db').define('event', {
     date: {
@@ -17,7 +18,9 @@ module.exports = require('../Db').define('event', {
     },
     hours: {
         type: DataTypes.INTEGER,
-        validate: 
+        validate: {
+            isIn: [serviceHours]
+        }
     }
 })
 

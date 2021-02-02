@@ -37,4 +37,4 @@ const database = new Sequelize (process.env.DATABASE_URL, {
 //     .then(()=> console.log('postgres db is connected'))
 //     .catch(err=> console.log(err));
 
-module.exports=database;
+module.exports = database;

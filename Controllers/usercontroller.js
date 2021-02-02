@@ -1,64 +1,112 @@
 const router = require("express").Router();
-const User = require("../Db").import("../Models/studentUser");
-const teacherUser = require("../Db").import("../Models/teacherUser");
-const Service = require("../Db").import("../Models/service");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+
 const validateSession = require("../Middleware/validate-session");
 const validateSessionTeacher = require("../Middleware/validate-session-teacher");
 
-router.post("/signup", (req, res) => {
-  User.create({
-    firstName: req.body.studentUser.firstName,
-    lastName: req.body.studentUser.lastName,
-    email: req.body.studentUser.email,
-    password: bcrypt.hashSync(req.body.studentUser.password, 12),
-    classId: req.body.studentUser.classId,
-  })
-    .then((studentUser) => {
-      const token = jwt.sign({ id: studentUser.id }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.json({
-        user: studentUser,
-        message: "user was created successfully",
-        sessionToken: token,
-      });
+const { StudentUser: User, TeacherUser, Service } = require('../Models/index')
+
+router.post("/signup/:role", async (req, res) => {
+
+  try {
+
+    if (!['teacher', 'student'].includes(req.params.role))
+      throw new Error('role must be teacher or student')
+
+    const M = req.params.role === 'student' ? User : TeacherUser
+
+    const creationResult = await M.create({
+      firstName: req.body.user.firstName,
+      lastName: req.body.user.lastName,
+      email: req.body.user.email,
+      password: await bcrypt.hash(req.body.user.password, 12),
+      classId: req.body.user.classId,
+      teacher: req.params.role === 'teacher'
     })
-    .catch((err) => res.status(500).send(err));
+      
+    const token = jwt.sign({ id: studentUser.id }, process.env.JWT_SECRET, { expiresIn: "7d" })
+    
+    res.json({
+      user: creationResult,
+      message: `${req.params.role} user was created successfully`,
+      sessionToken: token,
+    })
+
+  } catch (err) {
+    res.status(500).send(err)
+  }
 });
 
 //login
-router.post("/login", (req, res) => {
-  User.findOne({
-    where: { email: req.body.studentUser.email },
-  })
-    .then((user) => {
-      if (user) {
-        bcrypt.compare(
-          req.body.studentUser.password,
-          user.password,
-          (err, matches) => {
-            if (matches) {
-              const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-                expiresIn: "7d",
-              });
-              res.status(200).json({
-                user: user,
-                message: "successfully authenticated",
-                sessionToken: token,
-              });
-            } else {
-              res.status(502).json({ error: "password mismatch" });
-            }
-          }
-        );
+router.post("/login", async (req, res) => {
+  try {
+
+    try {
+      const studentResult = await User.findOne({
+        where: { email: req.body.user.email },
+      })
+        
+      if (studentResult) {
+        const bcResult = await bcrypt.compare(req.body.user.password, user.password)
+          
+        if (bcResult) {
+          const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+          res.status(200).json({
+            user: user,
+            message: "successfully authenticated",
+            sessionToken: token,
+          });
+        } else {
+          res.status(502).json({ error: "password mismatch" });
+        }
+
       } else {
         res.status(500).json({ error: "user not found" });
       }
-    })
-    .catch((err) => res.status(500).json({ error: err }));
+    } catch (err) {
+
+      const teacherResult = await TeacherUser.findOne({
+        where: { email: req.body.user.email }
+      })
+
+      if (teacherResult) {
+        const bcResult = await bcrypt.compare(req.body.user.password, user.password)
+          
+        if (bcResult) {
+          const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+          res.status(200).json({
+            user: user,
+            message: "successfully authenticated",
+            sessionToken: token,
+          });
+        } else {
+          res.status(502).json({ error: "password mismatch" });
+        }
+
+      }
+    }
+      
+  } catch (err) {
+    res.status(500).json(err)
+  }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //GET '/' --- Gets all users (eventually add validateSession when connected to teacher)
 router.get("/all", validateSessionTeacher, function (req, res) {
